@@ -123,6 +123,7 @@ tabsContainer.addEventListener('click', function (e) {
     .classList.add('operations__content--active');
 });
 
+/*
 //////////////////////////////////////////
 // Passing Arguments to Event Handlers
 
@@ -144,6 +145,212 @@ const handleHover = function (e) {
 // Passing "argument" into handler
 nav.addEventListener('mouseover', handleHover.bind(0.5));
 nav.addEventListener('mouseout', handleHover.bind(1));
+
+//////////////////////////////////////////
+// Stick Navigation
+const initialCoords = section1.getBoundingClientRect();
+console.log(initialCoords);
+
+// 스크롤할 때마다 event가 촉발돼서 비효율적 -> 특히 모바일 환경
+window.addEventListener('scroll', function (e) {
+  console.log(window.scrollY);
+
+  if (window.scrollY > initialCoords.top) nav.classList.add('sticky');
+  else nav.classList.remove('sticky');
+});
+*/
+
+/////////////////////////////////////////
+// MEMO A Better Way: The Intersection Observer API
+// https://developer.mozilla.org/en-US/docs/Web/API/Intersection_Observer_API
+// 1) 스크롤링에 따라 이미지, 컨텐츠의 레이지 로딩
+// 2) 무한 스크롤
+// 3) 광고 요금 계산
+// 4) 유저가 결과를 보는 것에 따라 애니메이션 등 수행 여부 결정
+
+// const obsCallback = function (entries, observer) {
+//   entries.forEach(entry => {
+//     console.log(entry);
+//   });
+// };
+
+// const obsOptions = {
+//   root: null, // 관찰 객체가 intersect하는 기준이 되는 대상. null이면 viewport.
+//   // threshold: 0.1, // 뷰포인트에 관찰 객체의 최소 10%가 보이면 invoked
+//   // rootMargin: "10px 20px 30px 40px" // 루트의 마진. top, right, bottom, left (px or %)
+//   threshold: [0, 0.2], // 루트(뷰포트) 기준임. [top, bottom] or [top, right, bottom, left]
+// };
+
+// const observer = new IntersectionObserver(obsCallback, obsOptions);
+// observer.observe(section1);
+
+const header = document.querySelector('.header');
+const navHeight = nav.getBoundingClientRect();
+// console.log(navHeight);
+
+const stickyNav = function (entries) {
+  const [entry] = entries;
+  nav.classList.add('sticky');
+  if (!entry.isIntersecting) nav.classList.add('sticky');
+  else nav.classList.remove('sticky');
+};
+
+const headerObserver = new IntersectionObserver(stickyNav, {
+  root: null,
+  threadhold: 0,
+  rootMargin: `${-navHeight.height}px`,
+});
+
+headerObserver.observe(header);
+
+/////////////////////////////////////////
+// Revealing Elements on Scroll
+
+const allSections = document.querySelectorAll('section');
+
+const revealSection = function (entries, observer) {
+  const [entry] = entries;
+  console.log(entry);
+
+  if (!entry.isIntersecting) return;
+  else entry.target.classList.remove('section--hidden');
+  observer.unobserve(entry.target); // event 발생 후에는 observe 하지 않도록 for 성능
+};
+
+const sectionObserver = new IntersectionObserver(revealSection, {
+  root: null,
+  threshold: 0.15,
+});
+
+// allSections.forEach(function (section) {
+//   sectionObserver.observe(section);
+//   section.classList.add('section--hidden');
+// });
+
+/////////////////////////////////////////
+// Building a Slider Component: Part1
+
+// Slider
+const slider = function () {
+  const slides = document.querySelectorAll('.slide');
+  const btnLeft = document.querySelector('.slider__btn--left');
+  const btnRight = document.querySelector('.slider__btn--right');
+  const dotContainer = document.querySelector('.dots');
+  let curSlide = 0;
+  const maxSlide = slides.length;
+
+  // Functions
+  const createDots = function () {
+    slides.forEach(function (_, i) {
+      dotContainer.insertAdjacentHTML(
+        'beforeend',
+        `<button class="dots__dot" data-slides="${i}"></button>`
+      );
+    });
+  };
+
+  const goToSlide = function (slide) {
+    slides.forEach(
+      (s, i) => (s.style.transform = `translateX(${100 * (i - slide)}%)`)
+    );
+  };
+
+  const activateDot = function (slide) {
+    document
+      .querySelectorAll('.dots__dot')
+      .forEach(dot => dot.classList.remove('dots__dot--active'));
+
+    document
+      .querySelector(`.dots__dot[data-slides="${slide}"]`)
+      .classList.add(`dots__dot--active`);
+  };
+
+  const nextSlide = function () {
+    curSlide === maxSlide - 1 ? (curSlide = 0) : curSlide++;
+    goToSlide(curSlide);
+    activateDot(curSlide);
+  };
+
+  const prevSlide = function () {
+    curSlide === 0 ? (curSlide = maxSlide - 1) : curSlide--;
+    goToSlide(curSlide);
+    activateDot(curSlide);
+  };
+
+  const init = function () {
+    createDots();
+    activateDot(0);
+    goToSlide(0);
+  };
+
+  init();
+
+  // Event handlers
+  btnRight.addEventListener('click', nextSlide);
+  btnLeft.addEventListener('click', prevSlide);
+
+  dotContainer.addEventListener('click', function (e) {
+    if (e.target.classList.contains('dots__dot')) {
+      const { slides } = e.target.dataset;
+      goToSlide(slides);
+      activateDot(slides);
+    }
+  });
+
+  document.addEventListener('keydown', function (e) {
+    e.code === 'ArrowLeft' && prevSlide(); // Short Circuiting
+    e.code === 'ArrowRight' && nextSlide();
+  });
+};
+
+slider();
+
+/*
+////////////////////////////////////////
+// MEMO Lifecycle DOM Events
+// 1. DOMContentLoaded : 브라우저에서 HTML이 완전히 로드되고 DOM tree가 만들어질 때 발생하는 이벤트
+// 2. load : 문서의 모든 콘텐츠(imgs, script, css, etc)가 로드된 후 발생하는 이벤트
+// 3. beforeunload / unloade : 사용자가 페이지를 벗어날 때 일어나는 이벤트
+
+document.addEventListener('DOMContentLoaded', function (e) {
+  console.log('HTML parsed and DOM tree built!', e);
+});
+
+window.addEventListener('load', function (e) {
+  console.log('Page fully loaded', e);
+});
+
+// Don't abuse!
+// window.addEventListener('beforeunload', function (e) {
+//   e.preventDefault();
+//   console.log(e);
+//   e.returnValue = ''; // legacy
+// });
+*/
+
+////////////////////////////////////////
+// MEMO Defer and Async Script Loading
+// HTML5 feature
+
+//  1. End of Body
+//  -Scripts are fetched and executed after HTML is completely parsed
+//  -Use if you ened to support old browsers
+
+//  2. Async in Head
+//  -HTML 파싱할 때 script Fetch되고, HTML 파싱후 run.
+//  -Scripts are fetched asynchronously and executed immediately
+//  -Usually the DOMContentLoaded event waits for all scripts to execute, except for async scripts. So, DOMContentLoaded does not wait for an async script
+//  -Scripts not guaranteed to execute in order
+//  -Use for 3rd-party scripts where order doesn't matter (e.g. Google Analytics)
+
+//  3. Defer in Head (BEST!)
+//  -HTML 파싱할 때 script Fetch되고, fetch 완료 후 run
+//  -Scripts are fetched asynchronously and executed after the HTML is completely parsed
+//  -DOMContentLoaded event fires after defer script is executed
+//  -Scripts are executed in order
+//  -This is overall the best solution! Use for your own scripts, and when order matters (e.g. including a library)
+
+//  You can, of course, use different strategies for different scripts. Usually a complete web application includes more than just one script
 
 /*
 /////////////////////////////////////////
