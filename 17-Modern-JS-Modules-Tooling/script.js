@@ -1,4 +1,3 @@
-/*
 // module uses strict mode by default
 
 // <script type="module" src="script.js"> -> exporting 가능
@@ -23,6 +22,7 @@ add('apples', 2);
 
 console.log(cart); // cart is not empty! Live Connection!
 
+/*
 ///////////////////////////////////////////////////
 // Top-level await (works in only modules, not script)
 // console.log('Start fetching');
@@ -47,6 +47,7 @@ const lastPost2 = await getLastPost();
 console.log(lastPost2);
 */
 
+/*
 //////////////////////////////////////////////////
 // The Module Pattern
 
@@ -82,6 +83,7 @@ ShoppingCart2.addToCart('apple', 4);
 ShoppingCart2.addToCart('pizza', 2);
 console.log(ShoppingCart2);
 console.log(ShoppingCart2.shippingCost);
+*/
 
 //////////////////////////////////////////////
 // CommonJS Modules
@@ -102,4 +104,34 @@ console.log(ShoppingCart2.shippingCost);
 //   const { addToCart } = require('./shoppingCart.js')
 
 //////////////////////////////////////////////
-// A brief intro to the command line
+// NPM
+// 과거 html에 스크립트 태그를 넣고는 했지만, 프로젝트가 커지면 문제 발생.
+// 1) not manageable
+// 2) many times it should download libraries like jquery directly in file system
+// 3) no single repository
+
+import cloneDeep from './node_modules/lodash-es/cloneDeep.js';
+
+const state = {
+  cart: [
+    {
+      product: 'bread',
+      quantity: 5,
+    },
+    {
+      product: 'pizza',
+      quantity: 5,
+    },
+  ],
+  user: { loggedIn: true },
+};
+
+const stateClone = Object.assign({}, state);
+const stateDeepClone = cloneDeep(state);
+
+state.user.loggedIn = false;
+console.log(stateClone);
+console.log(stateDeepClone);
+
+////////////////////////////////////////
+// Bundling with Parcel and NPM Scripts
