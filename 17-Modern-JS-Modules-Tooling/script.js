@@ -110,7 +110,9 @@ console.log(ShoppingCart2.shippingCost);
 // 2) many times it should download libraries like jquery directly in file system
 // 3) no single repository
 
-import cloneDeep from './node_modules/lodash-es/cloneDeep.js';
+// import cloneDeep from './node_modules/lodash-es/cloneDeep.js';
+import cloneDeep from 'lodash-es'; // lib 주소 자동으로 찾아줌
+// import cloneDeep from 'lodash' // ES 버전말고도 CommonJS 버전의 라이브러리도 자동으로 찾아줌
 
 const state = {
   cart: [
@@ -133,5 +135,42 @@ state.user.loggedIn = false;
 console.log(stateClone);
 console.log(stateDeepClone);
 
-////////////////////////////////////////
-// Bundling with Parcel and NPM Scripts
+// html 페이지 maintained
+// Hot Module Replacement(HMR) automaticlaly updates modules in the browser at runtime w/o refreshing a whole page.
+// cart state 계속 유지돼서 push 데이터 reload 할 때마다 추가됨
+if (module.hot) {
+  module.hot.accept();
+}
+
+// Babel/Polyfilling. to support old versions of browsers
+// use @babel/preset-env
+
+class Person {
+  #greeting = 'Hey';
+  constructor(name) {
+    this.name = name;
+    console.log(`${this.#greeting}, ${this.name}`);
+  }
+}
+
+const jonas = new Person('Jonas');
+console.log('Jonas' ?? null);
+
+// Babel은 ES6 feature는 ES5로 transpile 하지 않음.
+// Syntax만 easy to compile... 브라우저가 그냥 ES6를 이해하는 거라 되는 거임.
+// -> Polyfilling이 필요함.
+console.log(cart.find(el => el.quantity >= 2));
+Promise.resolve('TEST').then(x => console.log(x));
+
+// import 'core-js/stable';
+// 골라서 polyfill (bundle size 줄이기)
+import 'core-js/stable/array/find';
+import 'core-js/stable/promise';
+
+// Polyfilling async functions
+import 'regenerator-runtime/runtime';
+
+//////////////////////////////////////////
+// review: modern and clean code
+// Declarative and Functional Programming
+// Imperative vs. Declarative
