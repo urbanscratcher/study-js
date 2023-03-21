@@ -1,3 +1,4 @@
-# Forkify Project for Practicing JS
+# Forkify Project
 
-Recipe application with custom recipe uploads.
+- Recipe application with custom recipe uploads.
+- This is a project to practice JS
